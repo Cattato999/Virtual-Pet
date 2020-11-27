@@ -1,10 +1,15 @@
 var dog, happyDog, database, foodS, foodStock
 var fedTime, lastFed, addFood, feed, foodObj
+var gameState, readState
+var garden, washroom, bedroom
 
 function preload()
 {
   dogImg = loadImage("images/dogImg.png");
   happyDog = loadImage("images/dogImg1.png");
+  garden = loadImage("images/Garden.png");
+  bedroom = loadImage("images/Bed Room.png");
+  washroom = loadImage("images/Wash Room.png");
 }
 
 function setup() {
@@ -28,25 +33,63 @@ function setup() {
 
   feed.mousePressed(feedDog);
   addFood.mousePressed(addFoods);
+
+  readState = database.ref("gameState");
+  readState.on("value", function(data){
+    gameState = data.val();
+  });
+
+  fedTime = database.ref("FeedTime");
+  fedTime.on("value",function(data){
+    lastFed = data.val()
+  });
+
+
 }
 
 
 function draw() {  
   background (46, 139, 87);
 
-
-  foodObj.display();
-
-  fedTime = database.ref("FeedTime");
+  /*fedTime = database.ref("FeedTime");
   fedTime.on("value",function(data){
     lastFed = data.val();
-  });
+  });*/
+
+  if(gameState!=="hungry"){
+    feed.hide();
+    addFood.hide();
+    dog.remove();
+  } else{
+    feed.show();
+    addFood.show();
+    dog.addImage(dogImg);
+  }
+
+  currenttime = hour();
+  if (currenttime==(lastFed)){
+    update("playing");
+    foodObj.garden();
+  }else if(currenttime==(lastFed+1)){
+    update("sleeping");
+    foodObj.bedroom();
+  }else if(currenttime>(lastFed+1)&&currenttime<=(lastFed+4)){
+    update("bathing");
+    foodObj.washroom();
+  }else{
+    update("hungry");
+    foodObj.display();
+  }
 
   drawSprites();
-    fill("yellow");
+    /*fill("yellow");
     stroke("black");
     textSize(20);
-    text("Amount of food remaining: "+foodS, 200, 50);
+    text("Amount of food remaining: "+foodS, 200, 50);*/
+
+    console.log(gameState);
+    console.log(currenttime);
+    console.log(lastFed);
 
 }
 
@@ -60,8 +103,9 @@ function feedDog(){
   foodObj.updateFoodStock(foodObj.getFoodStock()-1);
   database.ref("/").update({
     Food: foodObj.getFoodStock(),
-    FeedTime: hour()
-  })
+    FeedTime: hour(),
+    gameState: "hungry"
+  });
 }
 
 function addFoods(){
@@ -69,4 +113,10 @@ function addFoods(){
   database.ref("/").update({
     Food: foodS
   })
+}
+
+function update(state){
+  database.ref('/').update({
+    gameState:state
+  });
 }

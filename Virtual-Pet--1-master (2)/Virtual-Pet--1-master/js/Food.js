@@ -29,6 +29,8 @@ class Food{
         imageMode(CENTER);
         image(this.image,720,220,50,50);
 
+        text(lastFed,50,50)
+
         if(this.foodStock!==0){
             for(var i=0; i<this.foodStock; i++){
                 if(i%10===0){
@@ -39,5 +41,15 @@ class Food{
                 x=x+30;
             }
         }
+    }
+
+    bedroom(){
+        background(bedroom,550,500);
+    }
+    bathroom(){
+        background(washroom,550,500);
+    }
+    garden(){
+        background(garden,550,500);
     }
 }
